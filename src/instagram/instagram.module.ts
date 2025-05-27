@@ -7,5 +7,6 @@ import { PrismaModule } from '../prisma/prisma.module';
   imports: [PrismaModule],
   providers: [InstagramService],
   controllers: [InstagramController],
+  exports: [InstagramService],
 })
 export class InstagramModule {}

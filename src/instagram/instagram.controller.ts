@@ -8,6 +8,10 @@ import { DmDto } from './dto/dm.dto';
 import { LikeDto } from './dto/like.dto';
 import { FollowDto } from './dto/follow.dto';
 import { HashtagDto } from './dto/hashtag.dto';
+import { GetFollowersDto } from './dto/get-followers.dto';
+import { GetFollowingDto } from './dto/get-following.dto';
+import { GetUserPostsDto } from './dto/get-user-posts.dto';
+import { UnfollowDto } from './dto/unfollow.dto';
 
 @ApiTags('Instagram')
 @Controller('instagram')
@@ -63,5 +67,51 @@ export class InstagramController {
   @Post('hashtag')
   async searchHashtag(@Body() dto: HashtagDto) {
     return this.instagramService.searchByHashtag(dto.username, dto.hashtag);
+  }
+
+  @Post('followers')
+  @ApiOperation({ summary: 'Lista os seguidores de um perfil' })
+  @ApiBody({ type: GetFollowersDto })
+  async getFollowers(@Body() dto: GetFollowersDto) {
+    return this.instagramService.getFollowers(
+      dto.username,
+      dto.targetUsername,
+      dto.limit,
+    );
+  }
+
+  @Post('following')
+  @ApiOperation({ summary: 'Lista quem o usuário segue' })
+  @ApiBody({ type: GetFollowingDto })
+  async getFollowing(@Body() dto: GetFollowingDto) {
+    return this.instagramService.getFollowing(
+      dto.username,
+      dto.targetUsername,
+      dto.limit,
+    );
+  }
+
+  @Post('user-posts')
+  @ApiOperation({ summary: 'Lista as publicações de um usuário' })
+  @ApiBody({ type: GetUserPostsDto })
+  async getUserPosts(@Body() dto: GetUserPostsDto) {
+    return this.instagramService.getUserPosts(
+      dto.username,
+      dto.targetUsername,
+      dto.limit,
+    );
+  }
+
+  @Post('unfollow')
+  @ApiOperation({ summary: 'Deixa de seguir um usuário' })
+  @ApiBody({ type: UnfollowDto })
+  async unfollow(@Body() dto: UnfollowDto) {
+    return this.instagramService.unfollowUser(dto.username, dto.targetUsername);
+  }
+
+  @Post('clear-sessions')
+  @ApiOperation({ summary: 'Remove sessões inválidas do banco de dados' })
+  async clearInvalidSessions() {
+    return this.instagramService.clearInvalidSessions();
   }
 }

@@ -121,4 +121,93 @@ export class InstagramService {
       imageUrl: post.image_versions2?.candidates[0]?.url,
     }));
   }
+  async getFollowers(username: string, targetUsername: string, limit = 10) {
+    const sessionLoaded = await this.loadSession(username);
+    if (!sessionLoaded) {
+      throw new Error('Sessão não encontrada. Faça login novamente.');
+    }
+
+    const user = await this.ig.user.searchExact(targetUsername);
+    const followersFeed = this.ig.feed.accountFollowers(user.pk);
+    const followers: import('instagram-private-api').AccountFollowersFeedResponseUsersItem[] =
+      [];
+
+    do {
+      const items = await followersFeed.items();
+      followers.push(...items);
+    } while (followers.length < limit && followersFeed.isMoreAvailable());
+
+    return followers.slice(0, limit);
+  }
+
+  async getFollowing(username: string, targetUsername: string, limit = 10) {
+    const sessionLoaded = await this.loadSession(username);
+    if (!sessionLoaded) {
+      throw new Error('Sessão não encontrada. Faça login novamente.');
+    }
+
+    const user = await this.ig.user.searchExact(targetUsername);
+    const followingFeed = this.ig.feed.accountFollowing(user.pk);
+    const following: import('instagram-private-api').AccountFollowingFeedResponseUsersItem[] =
+      [];
+
+    do {
+      const items = await followingFeed.items();
+      following.push(...items);
+    } while (following.length < limit && followingFeed.isMoreAvailable());
+
+    return following.slice(0, limit);
+  }
+
+  async getUserPosts(username: string, targetUsername: string, limit = 5) {
+    const sessionLoaded = await this.loadSession(username);
+    if (!sessionLoaded) {
+      throw new Error('Sessão não encontrada. Faça login novamente.');
+    }
+
+    const user = await this.ig.user.searchExact(targetUsername);
+    const userFeed = this.ig.feed.user(user.pk);
+    const posts: import('instagram-private-api').UserFeedResponseItemsItem[] =
+      [];
+
+    do {
+      const items = await userFeed.items();
+      posts.push(...items);
+    } while (posts.length < limit && userFeed.isMoreAvailable());
+
+    return posts.slice(0, limit).map((post) => ({
+      id: post.id,
+      caption: post.caption?.text,
+      imageUrl: post.image_versions2?.candidates[0]?.url,
+    }));
+  }
+
+  async unfollowUser(username: string, targetUsername: string) {
+    const sessionLoaded = await this.loadSession(username);
+    if (!sessionLoaded) {
+      throw new Error('Sessão não encontrada. Faça login novamente.');
+    }
+
+    const user = await this.ig.user.searchExact(targetUsername);
+    return this.ig.friendship.destroy(user.pk);
+  }
+  async clearInvalidSessions() {
+    const sessions = await this.prisma.instagramSession.findMany();
+    const results: { username: string; valid: boolean }[] = [];
+
+    for (const session of sessions) {
+      try {
+        this.ig.state.deserialize(session.session);
+        await this.ig.user.info(session.username); // teste rápido
+        results.push({ username: session.username, valid: true });
+      } catch {
+        await this.prisma.instagramSession.delete({
+          where: { username: session.username },
+        });
+        results.push({ username: session.username, valid: false });
+      }
+    }
+
+    return results;
+  }
 }
