@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: finance-instagram-db
+    image: bitnami/postgresql:latest
+    ports:
+      - "5440:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
+    volumes:
+      - app-finance-docker-data:/bitnami/postgresql
+    restart: always
+    networks:
+      - app-finance
+
+volumes:
+  app-finance-docker-data:
+
+networks:
+  app-finance:
+    driver: bridge
