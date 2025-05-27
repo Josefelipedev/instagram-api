@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -16,8 +15,8 @@ datasource db {
 
 model InstagramSession {
   id        String   @id @default(uuid())
-  username  String
-  session   Json // Armazena snapshot de sessão da API
+  username  String   @unique
+  session   Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

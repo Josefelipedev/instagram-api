@@ -3,6 +3,13 @@ import { IsString, IsOptional } from 'class-validator';
 
 export class PostPhotoDto {
   @ApiProperty({
+    description: 'Nome de usuário do Instagram para usar a sessão',
+    example: 'meu_usuario',
+  })
+  @IsString()
+  username: string;
+
+  @ApiProperty({
     description: 'Caminho para a imagem local ou base64',
     example: './uploads/foto.jpg',
   })
